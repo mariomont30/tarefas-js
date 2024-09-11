@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Catálogo de Livros</title>
+ <link rel="stylesheet" href="style.css">
+</head>
+<body>
+ <cabeçalho>
+ <h1>Catálogo de Livros Online</h1>
+ <input type= "text" id= "buscarLivro" placeholder= "Buscar livre por título, autor, gênero ou ano">
+ botão <id="btnBuscar">Buscar</button>
+ </header>
+
+ <seção>
+ <h2>Adicionar Novo Livro</h2>
+ <form id="formAdicionar">
+ <label for= "titulo">Título:</label>
+ <input type="text" id="titulo" required><br>
+ <label for= "autor">Autor:</label>
+ <tipo de entrada="texto" id= "autor" necessário><br>
+ <label for= "genero">Gênero:</label>
+ <input type="text" id="genero" required><br>
+ <label for= "ano">Ano de Publicação:</label>
+ <tipo de entrada= "número" id= "ano" necessário><br>
+ <label for= "avaliacao">Avaliação (1 a 5):</label>
+ <tipo de entrada= "número" id= "avaliacao" min="1 "max="5" necessário><br>
+ <botão type= "enviar">Adicionar Livro</botão>
+ </form>
+ </seção>
+
+ <seção>
+ <h2>Livros Disponíveis</h2>
+ <botão id= "btnClassificarTitulo">Classificar por Título</button>
+ botão <id= "btnClassificarAutor">Classificar por Autor</button>
+ <button id= "btnClassificarAvaliacao">Classificar por Avaliação</button>
+ <ul id="listaLivros"></ul>
+ </seção>
+
+ <script src="script.js"></script>
+</body>
+</html>
