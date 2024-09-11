@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<cabeça>
+    <meta charset="UTF-8">
+    <meta nome="viewport" conteúdo="width=device-width, initial-scale=1.0">
+    <título>Catálogo de Livros</título>
+    <estilo>
+ corpo {
+ fonte-família: Arial, sans-serif;
+ fundo-cor: #47ebd8; 
+ margem: 0;
+ preenchimento: 0;
+ cor: #333;
+        }
+ cabeçalho {
+ fundo-cor: #b0a09d; 
+ preenchimento: 20px;
+ texto-alinhar: centro;
+ cor: branco;
+        }
+ entrada cabeçalho {
+ preenchimento: 10px;
+ larga: 300px;
+ margem direita: 10px;
+ fronteira: nenhum;
+ raio fronteiriço: 5px;
+        }
+ botão cabeçalho {
+ preenchimento: 10px;
+ fundo-cor: #333;
+ cor: branco;
+ fronteira: nenhum;
+ raio fronteiriço: 5px;
+ cursor: ponteiro;
+        }
+ secção {
+ preenchimento: 20px;
+        }
+ formulário etiqueta {
+ exibição: bloco embutido;
+ larga: 120px;
+        }
+ entrada formalário {
+ preenchimento: 5px;
+ margem: 10px 0;
+ larga: 300px;
+ fronteira: 1 px sólido #ccc;
+ raio fronteiriço: 5px;
+        }
+ botão formulário {
+ preenchimento: 10px;
+ fundo-cor: #4CAF50;
+ cor: branco;
+ fronteira: nenhum;
+ raio fronteiriço: 5px;
+ cursor: ponteiro;
+        }
+ ul {
+ ponta de estilo de lista: Nenhum;
+ preenchimento: 0;
+        }
+ ul li {
+            fundo-cor: #fff;
+            preenchimento: 15px;
+            margem: 10px 0;
+            fronteira: 1px sólido #ddd;
+            raio fronteiriço: 5px;
+        }
+ botão {
+            preenchimento: 5px 10px;
+            margem esquerda: 10px;
+            fundo-cor: #f44336;
+            cor: branco;
+            fronteira: nenhum;
+            raio fronteiriço: 5px;
+            cursor: ponteiro;
+        }
+ botão:pairar {
+            fundo-cor: #e53935;
+        }
+    </estilo>
+</cabeça>
+<corpo>
+    <cabeçalho>
+        <h1>Catálogo de Livros Online</h1>
+        <entrada tipo="texto" eu="buscarLivro" espaço reservado="Buscar livre por título, autor, gênero ou ano">
+        <botão eu="btnBuscar">Buscar</botão>
+    </cabeçalho>
+
+    <seção>
+        <h2>Adicionar Novo Livro</h2>
+        <formulário eu="formAdicionar">
+            <etiqueta para="titulo">Título:</etiqueta>
+            <entrada tipo="texto" eu="titulo" requerido><br>
+            <etiqueta para="autor">Autor:</etiqueta>
+            <entrada tipo="texto" eu="autor" requerido><br>
+            <etiqueta para="genero">Gênero:</etiqueta>
+            <entrada tipo="texto" eu="genero" requerido><br>
+            <etiqueta para="ano">Ano de Publicação:</etiqueta>
+            <entrada tipo="número" eu="ano" requerido><br>
+            <etiqueta para="avaliacao">Avaliação (1 a 5):</etiqueta>
+            <entrada tipo="número" eu="avaliacao" min="1" máx="5" requerido><br>
+            <botão tipo="enviar">Adicionar Livro</botão>
+        </formulário>
+ </seção>
+
+ <seção>
+ <h2>Livros Disponíveis</h2>
+ <botão id="btnClassificarTitulo">Classificar por Título</botão>
+ <botão id="btnClassificarAutor">Classificar por Autor</botão>
+ <botão id="btnClassificarAvaliacao">Classificar por Avaliação</button>
+ <ul id="listaLivros"></ul>
+ </seção>
+
+ <script>
+ documento.addEventListener("DOMContentLoaded", função() {
+ const listaLivros = document.querySelector("#listaLivros");
+ const formAdicionar = document.querySelector("#formAdicionar");
+ const buscarLivro = document.querySelector("#buscarLivro");
+ const btnBuscar = document.querySelector("#btnBuscar");
+ const btnClassificarTitulo = document.querySelector("#btnClassificarTitulo");
+ const btnClassificarAutor = document.querySelector("#btnClassificarAutor");
+ const btnClassificarAvaliacao = document.querySelector("#btnClassificarAvaliacao");
+
+ deixe livres = [];
+
+            async function carregarLivros() {
+                try {
+                    const response = await fetch('livros.json');
+                    livros = await response.json();
+ livros.forEach(livro => livro.totalAvaliacoes = 1);
+ exibirLivros();
+                } pegar (erro) {
+ console.error("Erro ao carregar livres:", erro);
+                }
+            }
+
+ função exibirLivros(livrosFiltrados = livres) {
+ listaLivros.innerHTML = "";
+ livrosFiltrados.para cada((livro, índice) => {
+ listaLivros.innerHTML += `
+ <li>
+ <strong>${livro.título}</strong><br>
+ Autor: ${livro.autor}<br>
+ Gênero: ${livro.genero}<br>
+ Ano: ${livro.ano}<br>
+ Avaliação: ${livro.avaliácao.toFixado(1)} <botão onclick= "avaliarLivro(${índice})">Avaliar</botão>
+ <botão onclick="excluirLivro(${índice})">Excluir</botão>
+ </li>
+ `;
+                });
+            }
+
+ formAdicionar.addEventListener("enviar", função(e) {
+ e.prevenir padrão();
+ const título Documento =.consultaSelector("#titulo"). .valor;
+ const autor Documento =.consultaSelector("#autor"). .valor;
+ const genero Documento =.consultaSelector("#genero"). .valor;
+ const ano Documento =.consultaSelector("#ano"). .valor;
+ const avaliácao Documento =.consultaSelector("#avaliacao"). .valor;
+
+ const novoLivro = { título, autor, genero, ano, avaliácao: parseInt(avaliácao), totalAvaliacoes: 1 };
+ Livros. .empurrar(novoLivro);
+ exibirLivros();
+ salvarLivros();
+ limparFormulario();
+            });
+
+ btnBuscar.addEventListener("clicar", função() {
+ const termo = buscarLivro.valor.toLowerCase(). .aparar();
+ const livresFiltrados = livres.filtro(livro => 
+ livro.título.toLowerCase(). .inclúi(termo) || 
+ livro.autor.toLowerCase(). .inclúi(termo) || 
+ livro.genero.toLowerCase(). .inclúi(termo) || 
+ livro.ano.toString(). .inclúi(termo)
+                );
+ se (livrosFiltrados.comprimento === 0) {
+                    alerta("Nenhum livre contrado com o termo buscado.");
+                } outra outra {
+                    exibirLivros(livrosFiltrados);
+ documento.consultaSelector("#listaLivros"). . . rolar par ver({ comportamento: 'suave' });
+                }
+ buscarLivro.valor = "";
+            });
+
+ btnClassificarTitulo.addEventListener("clicar", função() {
+ livros.ordenar((a, b) => a.título.localidadeCompare(b.título));
+                exibirLivros();
+            });
+
+ btnClassificarAutor.addEventListener("clicar", função() {
+ livros.ordenar((a, b) => a.autor.localidadeCompare(b.autor));
+                exibirLivros();
+            });
+
+ btnClassificarAvaliacao.addEventListener("clicar", função() {
+ livros.ordenar((a, b) => b.avaliácao - a.avaliácao);
+                exibirLivros();
+            });
+
+ função salvarLivros() {
+ const jsonLivros = JSON.rigor(Livros);
+ console.log(jsonLivros);
+            }
+
+ função limparFormulario() {
+ formAdicionar.redefinir();
+            }
+
+ janela.avaliarLivro = função(índice) {
+ deixar avaliácao = alerta("Dê uma nota de 1 a 5 para o livro:");
+ avaliacao = parseInt(avaliácao);
+
+ se (isNaN(avaliácao) || avaliacao < 1 || avaliacao > 5) {
+                    alerta("Por favor, insira uma nota válida entre 1 e 5.");
+                } outra outra {
+ deixar livro = livres[índice];
+ livro.avaliácao = ((livro.avaliácao *livro.totalAvaliacoes) + avaliacao) / (livro.totalAvaliacoes + 1);
+ livro.totalAvaliacoes += 1;
+                    exibirLivros();
+                    salvarLivros();
+                    alerta("Avaliação registrada com sucesso!");
+                }
+            };
+
+ janela.excluirLivro = função(índice) {
+ se (confirmar("Tem perto de que deseja excluir está livre?")) {
+ livros.emenda(índice, 1);
+                    exibirLivros();
+                    salvarLivros();
+                    alerta("Livro excluído com sucesso!");
+                }
+            };
+
+            carregarLivros();
+        });
+ </roteiro>
+</corpo>
+</html>
