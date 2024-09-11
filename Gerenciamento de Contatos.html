@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Contatos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        header {
+            background-color: #007bff;
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        header input {
+            padding: 10px;
+            width: 300px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        header button {
+            padding: 10px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        section {
+            padding: 20px;
+        }
+
+        form label {
+            display: inline-block;
+            width: 120px;
+        }
+
+        form input {
+            padding: 5px;
+            margin: 10px 0;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        form button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        ul li {
+            background-color: #fff;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 5px 10px;
+            margin-left: 10px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #e53935;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Gerenciamento de Contatos</h1>
+        <input type="text" id="buscarContato" placeholder="Buscar contato por nome, telefone ou e-mail">
+        <button id="btnBuscar">Buscar</button>
+        <button id="btnOrdenarNome">Ordenar por Nome</button>
+        <button id="btnOrdenarTelefone">Ordenar por Telefone</button>
+        <button id="btnOrdenarEmail">Ordenar por E-mail</button>
+    </header>
+
+    <section>
+        <h2>Adicionar Novo Contato</h2>
+        <form id="formAdicionar">
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" required placeholder="Nome completo"><br>
+            <label for="telefone">Telefone:</label>
+            <input type="text" id="telefone" required placeholder="Número de telefone"><br>
+            <label for="email">E-mail:</label>
+            <input type="email" id="email" required placeholder="Endereço de e-mail"><br>
+            <button type="submit">Adicionar Contato</button>
+        </form>
+    </section>
+
+    <section>
+        <h2>Lista de Contatos</h2>
+        <ul id="listaContatos"></ul>
+    </section>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const listaContatos = document.querySelector("#listaContatos");
+            const formAdicionar = document.querySelector("#formAdicionar");
+            const buscarContato = document.querySelector("#buscarContato");
+            const btnBuscar = document.querySelector("#btnBuscar");
+            const btnOrdenarNome = document.querySelector("#btnOrdenarNome");
+            const btnOrdenarTelefone = document.querySelector("#btnOrdenarTelefone");
+            const btnOrdenarEmail = document.querySelector("#btnOrdenarEmail");
+
+            let contatos = JSON.parse(localStorage.getItem('contatos')) || [];
+
+            function exibirContatos(contatosFiltrados = contatos) {
+                listaContatos.innerHTML = "";
+                contatosFiltrados.forEach((contato, index) => {
+                    listaContatos.innerHTML += `
+                        <li>
+                            <strong>${contato.nome}</strong><br>
+                            Telefone: ${contato.telefone}<br>
+                            E-mail: ${contato.email}<br>
+                            <button onclick="editarContato(${index})">Editar</button>
+                            <button onclick="excluirContato(${index})">Excluir</button>
+                        </li>
+                    `;
+                });
+            }
+
+            formAdicionar.addEventListener("submit", function(e) {
+                e.preventDefault();
+                const nome = document.querySelector("#nome").value.trim();
+                const telefone = document.querySelector("#telefone").value.trim();
+                const email = document.querySelector("#email").value.trim();
+
+                if (!/^\d+$/.test(telefone)) {
+                    alert("O telefone deve conter apenas números.");
+                    return;
+                }
+
+                if (contatos.some(contato => contato.nome === nome && contato.telefone === telefone && contato.email === email)) {
+                    alert("Já existe um contato com o mesmo nome, telefone e e-mail.");
+                    return;
+                }
+
+                const novoContato = { nome, telefone, email };
+                contatos.push(novoContato);
+                exibirContatos();
+                salvarContatos();
+                formAdicionar.reset();
+                listaContatos.scrollIntoView({ behavior: 'smooth' });
+            });
+
+            btnBuscar.addEventListener("click", function() {
+                const termo = buscarContato.value.toLowerCase().trim();
+                const contatosFiltrados = contatos.filter(contato =>
+                    contato.nome.toLowerCase().includes(termo) ||
+                    contato.telefone.includes(termo) ||
+                    contato.email.toLowerCase().includes(termo)
+                );
+                if (contatosFiltrados.length === 0) {
+                    alert("Nenhum contato encontrado com o termo buscado.");
+                } else {
+                    exibirContatos(contatosFiltrados);
+                    listaContatos.scrollIntoView({ behavior: 'smooth' });
+                }
+                buscarContato.value = "";
+            });
+
+            btnOrdenarNome.addEventListener("click", function() {
+                contatos.sort((a, b) => a.nome.localeCompare(b.nome));
+                exibirContatos();
+                salvarContatos();
+                listaContatos.scrollIntoView({ behavior: 'smooth' });
+            });
+
+            btnOrdenarTelefone.addEventListener("click", function() {
+                contatos.sort((a, b) => a.telefone.localeCompare(b.telefone));
+                exibirContatos();
+                salvarContatos();
+                listaContatos.scrollIntoView({ behavior: 'smooth' });
+            });
+
+            btnOrdenarEmail.addEventListener("click", function() {
+                contatos.sort((a, b) => a.email.localeCompare(b.email));
+                exibirContatos();
+                salvarContatos();
+                listaContatos.scrollIntoView({ behavior: 'smooth' });
+            });
+
+            function salvarContatos() {
+                localStorage.setItem('contatos', JSON.stringify(contatos));
+            }
+
+            window.editarContato = function(index) {
+                const contato = contatos[index];
+                const nome = prompt("Nome:", contato.nome);
+                const telefone = prompt("Telefone:", contato.telefone);
+                const email = prompt("E-mail:", contato.email);
+
+                if (nome && telefone && email && /^\d+$/.test(telefone)) {
+                    if (contatos.some((contato, i) => i !== index && contato.nome === nome && contato.telefone === telefone && contato.email === email)) {
+                        alert("Já existe um contato com o mesmo nome, telefone e e-mail.");
+                        return;
+                    }
+                    contatos[index] = { nome, telefone, email };
+                    exibirContatos();
+                    salvarContatos();
+                    alert("Contato atualizado com sucesso!");
+                } else {
+                    alert("Todos os campos são obrigatórios e o telefone deve conter apenas números.");
+                }
+            };
+
+            window.excluirContato = function(index) {
+                if (confirm("Tem certeza que deseja excluir este contato?")) {
+                    contatos.splice(index, 1);
+                    exibirContatos();
+                    salvarContatos();
+                    alert("Contato excluído com sucesso!");
+                }
+            };
+
+            exibirContatos();
+        });
+    </script>
+</body>
+</html>
