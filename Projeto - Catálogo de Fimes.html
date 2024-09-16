@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeto Netflix</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            padding: 20px;
+            text-align: center;
+            background-color: #333;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            color: #ffffff;
+            cursor: pointer;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        header h1 a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        header h1 a:hover {
+            color: #e50914;
+            transform: scale(1.1);
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        #search-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        #search {
+            padding: 12px;
+            width: 60%;
+            font-size: 16px;
+            border: 2px solid #333;
+            border-radius: 25px 0 0 25px;
+            outline: none;
+            transition: border-color 0.3s;
+            background-color: #ffffff;
+        }
+
+        #search:focus {
+            border-color: #e50914;
+        }
+
+        #search-btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            background-color: #e50914;
+            color: #fff;
+            border: none;
+            border-radius: 0 25px 25px 0;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        #search-btn:hover {
+            background-color: #ffcccb;
+            color: #333;
+            transform: scale(1.05);
+        }
+
+        #movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .movie-card {
+            background-color: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.4s, box-shadow 0.4s;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .movie-card img {
+            width: 100%;
+            display: block;
+            border-bottom: 2px solid #e50914;
+        }
+
+        .movie-card .details {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.9);
+            width: 100%;
+            height: 100%;
+            color: #fff;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .movie-card h3 {
+            margin: 0 0 10px;
+            font-size: 1.5em;
+            color: #e50914;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .movie-card h3:hover {
+            color: #ffcccb;
+        }
+
+        .movie-card p {
+            margin: 10px 0;
+            font-size: 1em;
+            color: #666;
+        }
+
+        #scroll-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background-color: #ffffff;
+            color: #333;
+            border: 1px solid #e50914;
+            cursor: pointer;
+            display: none;
+            border-radius: 50px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        #scroll-to-top:hover {
+            opacity: 0.9;
+            transform: scale(1.1);
+        }
+
+        #loading {
+            display: none;
+            width: 100px;
+            height: 100px;
+            border: 16px solid #f3f3f3;
+            border-top: 16px solid #e50914;
+            border-radius: 50%;
+            margin: 50px auto;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: #e50914;
+            text-align: center;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><a href="#" id="refresh-catalog">Catálogo de Filmes</a></h1>
+        <div id="search-container">
+            <input type="text" id="search" placeholder="Pesquisar filmes...">
+            <button id="search-btn">Pesquisar</button>
+        </div>
+    </header>
+    <main id="movie-grid"></main>
+    <button id="scroll-to-top">Topo</button>
+    <div id="loading"></div>
+    <script>
+        const apiKey = 'SUA_CHAVE_API_AQUI';
+        const apiBaseURL = 'https://api.themoviedb.org/3';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.querySelector('#search');
+            const searchButton = document.querySelector('#search-btn');
+            const scrollToTopButton = document.querySelector('#scroll-to-top');
+            const refreshCatalog = document.querySelector('#refresh-catalog');
+
+            searchButton.addEventListener('click', () => fetchMovies(searchInput.value));
+            searchInput.addEventListener('keypress', e => {
+                if (e.key === 'Enter') fetchMovies(searchInput.value);
+            });
+
+            refreshCatalog.addEventListener('click', e => {
+                e.preventDefault();
+                fetchMovies();
+            });
+
+            window.addEventListener('scroll', () => {
+                window.scrollY > 200 ? scrollToTopButton.style.display = 'block' : scrollToTopButton.style.display = 'none';
+            });
+
+            scrollToTopButton.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            fetchMovies();
+        });
+
+        const fetchMovies = async (query = '') => {
+            const url = query ? 
+                `${apiBaseURL}/search/movie?api_key=${apiKey}&query=${query}` : 
+                `${apiBaseURL}/movie/popular?api_key=${apiKey}`;
+
+            try {
+                document.querySelector('#loading').style.display = 'block';
+                const response = await fetch(url);
+                const data = await response.json();
+                displayMovies(data.results);
+            } catch (error) {
+                document.querySelector('#movie-grid').innerHTML = `<p class="error-message">Erro ao buscar filmes</p>`;
+            } finally {
+                document.querySelector('#loading').style.display = 'none';
+            }
+        };
+
+        const displayMovies = movies => {
+            const movieGrid = document.querySelector('#movie-grid');
+            movieGrid.innerHTML = movies.map(movie => `
+                <div class="movie-card" onclick="showDetails(event, '${movie.id}')">
+                    <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}">
+                    <div class="details">
+                        <h3>${movie.title}</h3>
+                        <p>${movie.overview}</p>
+                        <p>Data de Lançamento: ${movie.release_date}</p>
+                        <p>Avaliação: ${movie.vote_average}</p>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        const showDetails = (event, movieId) => {
+            const details = event.currentTarget.querySelector('.details');
+            details.style.display = details.style.display === 'block' ? 'none' : 'block';
+        };
+    </script>
+</body>
+</html>
